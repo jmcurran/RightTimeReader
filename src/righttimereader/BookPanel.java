@@ -24,6 +24,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -41,6 +43,7 @@ class BookPanel extends JPanel{
 
     private void previousPageActionPerformed(ActionEvent evt) {
         theBook.prevPage();
+        this.repaint();
     }
     
     private class PicturePanel extends JPanel {
@@ -137,6 +140,17 @@ class BookPanel extends JPanel{
         c.weighty = 0.1;
         c.gridwidth = 3;
         this.add(capPanel, c);
+        
+        this.addPropertyChangeListener("isLoaded", new PropertyChangeListener(){
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if((Boolean)evt.getNewValue() == true){
+                    nextButton.setEnabled(true);
+                    prevButton.setEnabled(true);
+                }
+            }
+            
+        });
         
     }
        

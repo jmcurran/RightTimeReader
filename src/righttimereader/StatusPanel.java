@@ -50,7 +50,7 @@ class StatusPanel extends JPanel{
     
     public void setBook(Book newBook){
         theBook = newBook;
-        bookTitle.setText(theBook.title);
+        bookTitle.setText(theBook.getTitle());
     }
     
 }

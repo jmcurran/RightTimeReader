@@ -6,6 +6,8 @@
 package righttimereader;
 
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,14 +48,64 @@ public class Book {
         }
     }
     
-    String title;
-    String author;
-    Date revisionDate;
-    int numPages;
-    ArrayList<Page> pages;
-    int currentPage;
+    private boolean isLoaded;
+    private String title;
+    private String author;
+    private Date revisionDate;
+    private int numPages;
+    private ArrayList<Page> pages;
+    private int currentPage;
+    
+    private final PropertyChangeSupport mPcs =
+        new PropertyChangeSupport(this);
 
     public Book() {
+        isLoaded = false;
+        title = "";
+        author = "";
+        revisionDate = new Date();
+        numPages = 0;
+        pages = null;
+        currentPage = 0;
+    }
+    
+    public boolean getIsLoaded(){
+        return isLoaded;
+    }
+    
+    public void setIsLoaded(boolean state){
+        boolean oldState = isLoaded;
+        boolean newState = state;
+        this.isLoaded = state;
+        mPcs.firePropertyChange("isLoaded", oldState, newState);
+    }
+    
+    public String getTitle(){
+        return title;
+    }
+    
+    public String getAuthor(){
+        return author;
+    }
+    
+    public Date getRevisionDate(){
+        return revisionDate;
+    }
+    
+    public int getNumPages(){
+        return numPages;
+    }
+    
+    public int getCurrentPage(){
+        return currentPage;
+    }
+    
+    public void setCurrentPage(int newPage){
+        if(newPage < numPages && newPage >= 0){
+            int oldCurrentPage = currentPage;
+            currentPage = newPage;
+            mPcs.firePropertyChange("currentPage", oldCurrentPage, newPage);
+        }
     }
     
     private String readAuthor(List<String> bookLines){
@@ -189,12 +241,20 @@ public class Book {
             numPages = pages.size();
             currentPage = 0;
             
+            setIsLoaded(true);
+            
          }catch(IOException e){
             Logger.getLogger(Book.class.getName()).log(Level.SEVERE, null, e);
         }
         
     }
     
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        mPcs.addPropertyChangeListener(listener);
+    }
     
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        mPcs.removePropertyChangeListener(listener);
+    }   
     
 }
