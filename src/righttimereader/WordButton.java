@@ -16,38 +16,37 @@
  */
 package righttimereader;
 
-import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.awt.Dimension;
+import java.awt.Font;
+import javax.swing.JButton;
 
 /**
  *
  * @author James
  */
-public class Sentence {
-    private String sentence;
-    private String[] words;
-    private int numWords;
-    private int currentWord;
+public class WordButton extends JButton {
+    private Font bigFont;
+    private Font smallFont;
 
-    public Sentence(String sentence) {
-        this.sentence = sentence;
+    public WordButton(String string) {
+        super(string);
         
-        words = sentence.split(":");
-        numWords = words.length;
-        currentWord = 0;
+        bigFont = new Font("Verdana", Font.PLAIN, 28);
+        smallFont = new Font("Verdana", Font.PLAIN, 20);
+        this.setFont(bigFont);
+        this.setText(string);
+        System.out.println(this.getWidth() + " " + this.getHeight());
+        //this.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
+        this.setFont(smallFont);
     }
     
-    public String getCurrentWord(){
-        return words[currentWord];
+    public void setBigFont(){
+        this.setFont(bigFont);
+    }
+    
+    public void setSmallFont(){
+        this.setFont(smallFont);
     }
     
     
-    public void setCurrentWord(){
-        
-    }
-    
-    public ArrayList<String> getWords(){
-        return new ArrayList<>(Arrays.asList(words));
-    }    
 }

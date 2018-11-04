@@ -125,6 +125,10 @@ public class Book {
         return pages.get(currentPage).image;
     }
     
+    public String getCurrentPageCaption(){
+        return pages.get(currentPage).caption;
+    }
+    
     public void nextPage(){
         currentPage = currentPage < numPages - 1 ? currentPage + 1 : 0;
     }

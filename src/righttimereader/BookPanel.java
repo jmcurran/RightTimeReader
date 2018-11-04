@@ -16,13 +16,19 @@
  */
 package righttimereader;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -38,18 +44,20 @@ class BookPanel extends JPanel{
 
     private void nextPageActionPerformed(ActionEvent evt) {
         theBook.nextPage();
-        this.repaint();
+        capPanel.setSentence(new Sentence(theBook.getCurrentPageCaption()));
+        this.revalidate();
     }
 
     private void previousPageActionPerformed(ActionEvent evt) {
         theBook.prevPage();
-        this.repaint();
+        capPanel.setSentence(new Sentence(theBook.getCurrentPageCaption()));
+        this.revalidate();
     }
     
     private class PicturePanel extends JPanel {
 
         public PicturePanel() {
-            Dimension d = new Dimension(1080, 480);
+            Dimension d = new Dimension(1080, 420);
             this.setPreferredSize(d);
         }
         
@@ -69,11 +77,57 @@ class BookPanel extends JPanel{
     }
     
     private class CaptionPanel extends JPanel {
-
+        private Sentence sentence;
+        
         public CaptionPanel() {
-            Dimension d = new Dimension(1200, 60);
+            Dimension d = new Dimension(1200, 120);
             this.setPreferredSize(d);
+            sentence = null;
+            this.setLayout(new FlowLayout());
         }
+
+//        @Override
+//        protected void paintComponent(Graphics g) {
+//            super.paintComponent(g); //To change body of generated methods, choose Tools | Templates.
+//            
+//            if(sentence != null){
+//                Font smallFont = new Font("Verdana", Font.PLAIN, 24);
+//                Font bigFont = new Font("Verdana", Font.PLAIN, 36);
+//                
+//                
+//                Graphics2D g2d = (Graphics2D)g;
+//                FontRenderContext context = g2d.getFontRenderContext();
+//                TextLayout txt = new TextLayout(text, font, context);
+//
+//                Rectangle2D bounds = txt.getBounds();
+//                int x = (int) ((getWidth() - (int) bounds.getWidth()) / 2);
+//                int y = (int) ((getHeight() - (bounds.getHeight() - txt.getDescent())) / 2);
+//                y += txt.getAscent() - txt.getDescent();
+//
+//                g2d.dispose();
+//            }
+//        }
+        
+        public void setSentence(Sentence sentence){
+            this.sentence = sentence;
+            this.removeAll();
+            
+            for(String word : sentence.getWords()){
+                WordButton wb = new WordButton(word);
+                wb.addMouseListener(new MouseAdapter(){
+                    public void mouseEntered(MouseEvent e){
+                        wb.setBigFont();
+                    }
+                    
+                    public void mouseExited(MouseEvent e){
+                        wb.setSmallFont();
+                    }
+                });
+                this.add(wb);
+            }
+            this.revalidate();
+        }
+        
         
     }
     
@@ -157,7 +211,8 @@ class BookPanel extends JPanel{
     
     public void setBook(Book newBook){
         theBook = newBook;
-        this.repaint();
+        capPanel.setSentence(new Sentence(theBook.getCurrentPageCaption()));
+        this.revalidate();
     }
     
     @Override
