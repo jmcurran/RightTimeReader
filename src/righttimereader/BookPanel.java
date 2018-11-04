@@ -22,6 +22,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -32,6 +33,15 @@ import javax.swing.JPanel;
  */
 class BookPanel extends JPanel{
     private Book theBook;
+
+    private void nextPageActionPerformed(ActionEvent evt) {
+        theBook.nextPage();
+        this.repaint();
+    }
+
+    private void previousPageActionPerformed(ActionEvent evt) {
+        theBook.prevPage();
+    }
     
     private class PicturePanel extends JPanel {
 
@@ -75,9 +85,18 @@ class BookPanel extends JPanel{
         theBook = null;
         
         nextButton = new JButton(">");
-        prevButton = new JButton("<");
+        nextButton.addActionListener((java.awt.event.ActionEvent evt) -> {
+            nextPageActionPerformed(evt);
+        });
         nextButton.setPreferredSize(new Dimension(60, 480));
+        //nextButton.setEnabled(false);
+        
+        prevButton = new JButton("<");
+        prevButton.addActionListener((java.awt.event.ActionEvent evt) -> {
+            previousPageActionPerformed(evt);
+        });
         prevButton.setPreferredSize(new Dimension(60, 480));
+        //prevButton.setEnabled(false);
         
         picPanel = new PicturePanel();
         capPanel = new CaptionPanel();
@@ -120,9 +139,11 @@ class BookPanel extends JPanel{
         this.add(capPanel, c);
         
     }
+       
     
     public void setBook(Book newBook){
         theBook = newBook;
+        this.repaint();
     }
     
     @Override

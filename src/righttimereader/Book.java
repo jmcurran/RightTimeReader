@@ -73,6 +73,14 @@ public class Book {
         return pages.get(currentPage).image;
     }
     
+    public void nextPage(){
+        currentPage = currentPage < numPages - 1 ? currentPage + 1 : 0;
+    }
+    
+    public void prevPage(){
+        currentPage = currentPage > 0 ? currentPage - 1 : 0;
+    }
+    
     private Date readRevDate(List<String> bookLines){
         Pattern p = Pattern.compile("^#REVDATE *(.*)$");
         
