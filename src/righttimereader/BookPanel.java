@@ -26,14 +26,19 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 /**
@@ -42,24 +47,33 @@ import javax.swing.JPanel;
  */
 class BookPanel extends JPanel{
     private Book theBook;
-
-    private void nextPageActionPerformed(ActionEvent evt) {
+    
+    private void nextPage(){
         theBook.nextPage();
         capPanel.setSentence(new Sentence(theBook.getCurrentPageCaption()));
         this.revalidate();
+        this.repaint();
     }
 
-    private void previousPageActionPerformed(ActionEvent evt) {
+    private void nextPageActionPerformed(ActionEvent evt) {
+        nextPage();
+    }
+
+    private void previousPage(){
         theBook.prevPage();
         capPanel.setSentence(new Sentence(theBook.getCurrentPageCaption()));
         this.revalidate();
+        this.repaint();
+    }
+    
+    private void previousPageActionPerformed(ActionEvent evt) {
+        previousPage();
     }
     
     private class PicturePanel extends JPanel {
 
         public PicturePanel() {
-            Dimension d = new Dimension(1080, 420);
-            this.setPreferredSize(d);
+           
         }
         
         @Override
@@ -74,6 +88,18 @@ class BookPanel extends JPanel{
                 g2d.dispose();
             }
         }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return new Dimension(720, 400);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(1080, 480);
+        }
+        
+        
         
     }
     
@@ -81,8 +107,6 @@ class BookPanel extends JPanel{
         private Sentence sentence;
         
         public CaptionPanel() {
-            Dimension d = new Dimension(1200, 120);
-            this.setPreferredSize(d);
             this.setBorder(BorderFactory.createRaisedBevelBorder());
             sentence = null;
         }
@@ -95,6 +119,25 @@ class BookPanel extends JPanel{
                 sentence.drawSentence(g, this.getHeight(), this.getWidth());
             }
         }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return new Dimension(800, 80);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(1200, 60);
+        }
+        
+        public void nextWord(){
+            if(this.sentence != null){
+                sentence.nextWord();
+                this.revalidate();
+                this.repaint();
+            }
+        }
+        
         
         public void setSentence(Sentence sentence){
             this.sentence = sentence;
@@ -114,6 +157,7 @@ class BookPanel extends JPanel{
 //                this.add(wb);
 //            }
             this.revalidate();
+            this.repaint();
         }
         
         
@@ -148,44 +192,34 @@ class BookPanel extends JPanel{
         
         this.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(5, 5, 5, 5);
-        
+          
         c.fill = GridBagConstraints.BOTH;
-        c.anchor = GridBagConstraints.CENTER;
         c.gridx = 0;
         c.gridy = 0;
-        c.gridwidth = 2;
-        c.gridheight = 1;
         c.weightx = 0.05;
-        c.weighty = 0.80;
+        c.weighty = 8.0 / 9.0; //480 / 540
         this.add(prevButton, c);
         
         c.fill = GridBagConstraints.BOTH;
-        c.anchor = GridBagConstraints.CENTER;
-        c.gridx = 2;
+        c.gridx = 1;
         c.gridy = 0;
-        c.gridwidth = 36;
-        c.gridheight = 1;
         c.weightx = 0.90;
-        c.weighty = 0.80;
+        c.weighty = 8.0 / 9.0; //480 / 540
         this.add(picPanel, c);
         
         c.fill = GridBagConstraints.BOTH;
-        c.anchor = GridBagConstraints.CENTER;
-        c.gridx = 38;
+        c.gridx = 2;
         c.gridy = 0;
-        c.gridwidth = 2;
-        c.gridheight = 1;
         c.weightx = 0.05;
+        c.weighty = 8.0 / 9.0; //480 / 540
         this.add(nextButton, c);
         
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.LAST_LINE_START;
         c.gridx = 0;
         c.gridy = 1;
-        c.gridwidth = 40;
+        c.gridwidth = 3;
         c.weightx = 1.0;
-        c.weighty = 0.2;
+        c.weighty = 1.0 / 9.0; // 60 / 540 
         this.add(capPanel, c);
         
         this.addPropertyChangeListener("isLoaded", new PropertyChangeListener(){
@@ -199,6 +233,67 @@ class BookPanel extends JPanel{
             
         });
         
+        this.addKeyListener(new KeyListener(){
+            @Override
+            public void keyTyped(KeyEvent ke) {
+            } 
+
+            @Override
+            public void keyPressed(KeyEvent ke) {
+                int keyCode = ke.getKeyCode();
+
+                switch (keyCode) {
+                    case KeyEvent.VK_LEFT:
+                    case KeyEvent.VK_UP:
+                        previousPage();
+                        break;
+                    case KeyEvent.VK_RIGHT:
+                    case KeyEvent.VK_DOWN:
+                        nextPage();
+                        break;
+                    case KeyEvent.VK_SPACE:
+                    case KeyEvent.VK_ENTER:
+                        capPanel.nextWord();
+                        break;
+                    default:
+                        break;
+                  }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent ke) {
+            }
+        });
+        
+        this.addMouseListener(new MouseListener(){
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                capPanel.nextWord();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+         });
+        
+        this.setFocusable(true);
+        
     }
        
     
@@ -206,6 +301,7 @@ class BookPanel extends JPanel{
         theBook = newBook;
         capPanel.setSentence(new Sentence(theBook.getCurrentPageCaption()));
         this.revalidate();
+        this.repaint();
     }
     
     @Override

@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +40,7 @@ public class Sentence {
         
         words = new ArrayList<>(Arrays.asList(sentence.split(":")));
         numWords = words.size();
-        currentWord = 0;
+        currentWord = -1;
     }
     
     public String getCurrentWord(){
@@ -57,17 +58,23 @@ public class Sentence {
 
     public void drawSentence(Graphics g, int canvasHeight, int canvasWidth){
         Graphics2D g2d = (Graphics2D)g;
-        Font bigFont = new Font("Verdana", Font.PLAIN, 28);
-        Font smallFont = new Font("Verdana", Font.PLAIN, 20);
+        
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        Font bigFont = new Font("Helvetica", Font.PLAIN, 28);
+        Font smallFont = new Font("Helvetica", Font.PLAIN, 20);
         
         // First work out how big the whole sentence is so that the drawing starts
         // in the middle of the panel
         
         FontMetrics fmBig = g2d.getFontMetrics(bigFont);
+        FontMetrics fmSmall = g2d.getFontMetrics(smallFont);
         Rectangle2D r = fmBig.getStringBounds(sentence, g);
         
         int y = (int)((canvasHeight + r.getHeight()) * 0.5);
-        int x = (int)((canvasWidth + r.getWidth()) * 0.5);
+        int x = (int)((canvasWidth - r.getWidth()) * 0.5);
         
         int i = 0;
         for(String word : words){
@@ -76,13 +83,18 @@ public class Sentence {
                 g2d.drawString(word, x, y);             
             }else{
                 g2d.setFont(smallFont);
-                g2d.drawString(word, x, y);
+                int xOffset = (fmBig.stringWidth(word) - fmSmall.stringWidth(word)) / 2;
+                g2d.drawString(word, x + xOffset, y);
             }
+            i++;
             x += fmBig.stringWidth(word + " ");
         }
         
-        
         g2d.dispose();
         
+    }
+    
+    public void nextWord(){
+        currentWord = currentWord < (numWords - 1) ? currentWord + 1 : 0;
     }
 }

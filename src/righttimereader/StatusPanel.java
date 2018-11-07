@@ -32,9 +32,6 @@ class StatusPanel extends JPanel{
     private JLabel bookTitle;
 
     public StatusPanel() {
-        Dimension dimension = new Dimension(1200, 20);
-        this.setPreferredSize(dimension);
-        
         theBook = null;
         
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -52,5 +49,19 @@ class StatusPanel extends JPanel{
         theBook = newBook;
         bookTitle.setText(theBook.getTitle());
     }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(1200, 20);
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(800, 20);
+    }
+    
+    
+    
+    
     
 }

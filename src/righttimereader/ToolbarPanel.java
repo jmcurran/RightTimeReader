@@ -27,11 +27,22 @@ import javax.swing.JPanel;
 class ToolbarPanel extends JPanel{
 
     public ToolbarPanel() {
-        Dimension d = new Dimension(1200, 40);
-        this.setPreferredSize(d);
-        
         this.setBorder(BorderFactory.createRaisedBevelBorder());
     }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(1200, 40);
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(800, 40);
+    }
+    
+    
+    
+    
     
     
 }

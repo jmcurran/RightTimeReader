@@ -16,6 +16,7 @@
  */
 package righttimereader;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -28,6 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileFilter;
@@ -61,7 +63,6 @@ public class RightTimeReader extends JFrame{
     public RightTimeReader() throws HeadlessException {
         this.setTitle("RightTimeReader");
         this.setResizable(true);
-        this.setSize(1200, 600);
         
         initPanels();
         initToolBar();
@@ -74,6 +75,18 @@ public class RightTimeReader extends JFrame{
          //odd but true: the statement below centres the frame on screen
         this.setLocationRelativeTo(null);
     }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(800,600);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(1200, 600);
+    }
+    
+    
     
     private void initPanels(){
         this.toolbarPanel = new ToolbarPanel();
@@ -83,27 +96,22 @@ public class RightTimeReader extends JFrame{
         this.getContentPane().setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.FIRST_LINE_START;
         c.gridx = 0;
         c.gridy = 0;
-        c.gridwidth = 20;
-        c.gridheight = 2;
+        c.weightx = 1;
+        c.weighty = 4.0/60;
         this.getContentPane().add(toolbarPanel, c);
         
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.CENTER;
         c.gridx = 0;
-        c.gridy = 3;
-        c.gridwidth = 20;
-        c.gridheight = 26;
+        c.gridy = 1;
+        c.weighty = 54.0 / 60;
         this.getContentPane().add(bookPanel, c);
         
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.LAST_LINE_START;
         c.gridx = 0;
-        c.gridy = 28;
-        c.gridwidth = 20;
-        c.gridheight = 2;
+        c.gridy = 2;
+        c.weighty = 2.0 / 60;
         this.getContentPane().add(statusPanel, c);
     }
     
@@ -126,6 +134,9 @@ public class RightTimeReader extends JFrame{
         jButtonExit.setFocusable(false);
         jButtonExit.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButtonExit.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButtonExit.addActionListener((java.awt.event.ActionEvent evt) -> {
+            exitActionPerformed(evt);
+        });
         jToolBar.add(jButtonExit);
         
         toolbarPanel.setLayout(new BoxLayout(toolbarPanel, BoxLayout.X_AXIS));
@@ -156,6 +167,9 @@ public class RightTimeReader extends JFrame{
         jMenuItemQuit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItemQuit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/exit16x16.png"))); // NOI18N
         jMenuItemQuit.setText("Exit");
+        jMenuItemQuit.addActionListener((java.awt.event.ActionEvent evt) -> {
+            exitActionPerformed(evt);
+        });
         jMenuFile.add(jMenuItemQuit);
 
         //Help Menu
@@ -164,6 +178,9 @@ public class RightTimeReader extends JFrame{
 
         jMenuItemAbout = new JMenuItem();
         jMenuItemAbout.setText("About RightTimeReader...");
+        jMenuItemAbout.addActionListener((java.awt.event.ActionEvent evt) -> {
+            aboutActionPerformed(evt);
+        });
         jMenuHelp.add(jMenuItemAbout);
 
         // Menu bar
@@ -191,6 +208,15 @@ public class RightTimeReader extends JFrame{
             return null;
         }
     }
+    
+    private void aboutActionPerformed(java.awt.event.ActionEvent evt) {   
+        AboutDialog dlg = new AboutDialog();
+        dlg.setVisible(true);
+    }                                
+    
+    private void exitActionPerformed(java.awt.event.ActionEvent evt) {   
+        System.exit(0);
+    }                                               
     
     private void openBookActionPerformed(java.awt.event.ActionEvent evt) {                                              
         Book b = loadUBK();
