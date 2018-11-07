@@ -16,7 +16,11 @@
  */
 package righttimereader;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -26,20 +30,20 @@ import java.util.Arrays;
  */
 public class Sentence {
     private String sentence;
-    private String[] words;
+    private ArrayList<String> words;
     private int numWords;
     private int currentWord;
 
     public Sentence(String sentence) {
         this.sentence = sentence;
         
-        words = sentence.split(":");
-        numWords = words.length;
+        words = new ArrayList<>(Arrays.asList(sentence.split(":")));
+        numWords = words.size();
         currentWord = 0;
     }
     
     public String getCurrentWord(){
-        return words[currentWord];
+        return words.get(currentWord);
     }
     
     
@@ -48,6 +52,37 @@ public class Sentence {
     }
     
     public ArrayList<String> getWords(){
-        return new ArrayList<>(Arrays.asList(words));
-    }    
+        return words;
+    }
+
+    public void drawSentence(Graphics g, int canvasHeight, int canvasWidth){
+        Graphics2D g2d = (Graphics2D)g;
+        Font bigFont = new Font("Verdana", Font.PLAIN, 28);
+        Font smallFont = new Font("Verdana", Font.PLAIN, 20);
+        
+        // First work out how big the whole sentence is so that the drawing starts
+        // in the middle of the panel
+        
+        FontMetrics fmBig = g2d.getFontMetrics(bigFont);
+        Rectangle2D r = fmBig.getStringBounds(sentence, g);
+        
+        int y = (int)((canvasHeight + r.getHeight()) * 0.5);
+        int x = (int)((canvasWidth + r.getWidth()) * 0.5);
+        
+        int i = 0;
+        for(String word : words){
+            if(currentWord == i){
+                g2d.setFont(bigFont);
+                g2d.drawString(word, x, y);             
+            }else{
+                g2d.setFont(smallFont);
+                g2d.drawString(word, x, y);
+            }
+            x += fmBig.stringWidth(word + " ");
+        }
+        
+        
+        g2d.dispose();
+        
+    }
 }

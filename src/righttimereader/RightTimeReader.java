@@ -86,18 +86,24 @@ public class RightTimeReader extends JFrame{
         c.anchor = GridBagConstraints.FIRST_LINE_START;
         c.gridx = 0;
         c.gridy = 0;
+        c.gridwidth = 20;
+        c.gridheight = 2;
         this.getContentPane().add(toolbarPanel, c);
         
         c.fill = GridBagConstraints.HORIZONTAL;
         c.anchor = GridBagConstraints.CENTER;
         c.gridx = 0;
-        c.gridy = 1;
+        c.gridy = 3;
+        c.gridwidth = 20;
+        c.gridheight = 26;
         this.getContentPane().add(bookPanel, c);
         
         c.fill = GridBagConstraints.HORIZONTAL;
         c.anchor = GridBagConstraints.LAST_LINE_START;
         c.gridx = 0;
-        c.gridy = 2;
+        c.gridy = 28;
+        c.gridwidth = 20;
+        c.gridheight = 2;
         this.getContentPane().add(statusPanel, c);
     }
     

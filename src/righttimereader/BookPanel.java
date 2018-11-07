@@ -32,6 +32,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -82,49 +83,36 @@ class BookPanel extends JPanel{
         public CaptionPanel() {
             Dimension d = new Dimension(1200, 120);
             this.setPreferredSize(d);
+            this.setBorder(BorderFactory.createRaisedBevelBorder());
             sentence = null;
-            this.setLayout(new FlowLayout());
         }
 
-//        @Override
-//        protected void paintComponent(Graphics g) {
-//            super.paintComponent(g); //To change body of generated methods, choose Tools | Templates.
-//            
-//            if(sentence != null){
-//                Font smallFont = new Font("Verdana", Font.PLAIN, 24);
-//                Font bigFont = new Font("Verdana", Font.PLAIN, 36);
-//                
-//                
-//                Graphics2D g2d = (Graphics2D)g;
-//                FontRenderContext context = g2d.getFontRenderContext();
-//                TextLayout txt = new TextLayout(text, font, context);
-//
-//                Rectangle2D bounds = txt.getBounds();
-//                int x = (int) ((getWidth() - (int) bounds.getWidth()) / 2);
-//                int y = (int) ((getHeight() - (bounds.getHeight() - txt.getDescent())) / 2);
-//                y += txt.getAscent() - txt.getDescent();
-//
-//                g2d.dispose();
-//            }
-//        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g); //To change body of generated methods, choose Tools | Templates.
+            
+            if(sentence != null){
+                sentence.drawSentence(g, this.getHeight(), this.getWidth());
+            }
+        }
         
         public void setSentence(Sentence sentence){
             this.sentence = sentence;
-            this.removeAll();
-            
-            for(String word : sentence.getWords()){
-                WordButton wb = new WordButton(word);
-                wb.addMouseListener(new MouseAdapter(){
-                    public void mouseEntered(MouseEvent e){
-                        wb.setBigFont();
-                    }
-                    
-                    public void mouseExited(MouseEvent e){
-                        wb.setSmallFont();
-                    }
-                });
-                this.add(wb);
-            }
+//            this.removeAll();
+//            
+//            for(String word : sentence.getWords()){
+//                WordButton wb = new WordButton(word);
+//                wb.addMouseListener(new MouseAdapter(){
+//                    public void mouseEntered(MouseEvent e){
+//                        wb.setBigFont();
+//                    }
+//                    
+//                    public void mouseExited(MouseEvent e){
+//                        wb.setSmallFont();
+//                    }
+//                });
+//                this.add(wb);
+//            }
             this.revalidate();
         }
         
@@ -162,37 +150,42 @@ class BookPanel extends JPanel{
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(5, 5, 5, 5);
         
-        c.fill = GridBagConstraints.HORIZONTAL;
+        c.fill = GridBagConstraints.BOTH;
         c.anchor = GridBagConstraints.CENTER;
         c.gridx = 0;
         c.gridy = 0;
+        c.gridwidth = 2;
+        c.gridheight = 1;
         c.weightx = 0.05;
-        c.weighty = 0.9;
+        c.weighty = 0.80;
         this.add(prevButton, c);
         
         c.fill = GridBagConstraints.BOTH;
         c.anchor = GridBagConstraints.CENTER;
-        c.gridx = 1;
-        c.gridy = 0;
-        c.weightx = 0.9;
-        c.weighty = 0.9;
-        this.add(picPanel, c);
-        
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.CENTER;
         c.gridx = 2;
         c.gridy = 0;
+        c.gridwidth = 36;
+        c.gridheight = 1;
+        c.weightx = 0.90;
+        c.weighty = 0.80;
+        this.add(picPanel, c);
+        
+        c.fill = GridBagConstraints.BOTH;
+        c.anchor = GridBagConstraints.CENTER;
+        c.gridx = 38;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        c.gridheight = 1;
         c.weightx = 0.05;
-        c.weighty = 0.9;
         this.add(nextButton, c);
         
         c.fill = GridBagConstraints.HORIZONTAL;
         c.anchor = GridBagConstraints.LAST_LINE_START;
         c.gridx = 0;
-        c.gridy = 2;
+        c.gridy = 1;
+        c.gridwidth = 40;
         c.weightx = 1.0;
-        c.weighty = 0.1;
-        c.gridwidth = 3;
+        c.weighty = 0.2;
         this.add(capPanel, c);
         
         this.addPropertyChangeListener("isLoaded", new PropertyChangeListener(){
