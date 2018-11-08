@@ -16,11 +16,13 @@
  */
 package righttimereader;
 
+import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -49,6 +51,9 @@ public class AboutDialog extends javax.swing.JFrame {
             "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a></p></html>");
         blurb.setCaretPosition(0);
         this.setTitle("About RightTimeReader...");
+        ImageIcon icon = new javax.swing.ImageIcon(getClass().getResource("/Icons/rr16x16.png"));
+        Image img = icon.getImage();
+        this.setIconImage(img);
     }
 
     /**
@@ -157,4 +162,5 @@ public class AboutDialog extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
-}
+
+ }

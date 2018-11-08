@@ -21,8 +21,10 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
+import java.awt.Image;
 import java.io.File;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -61,8 +63,23 @@ public class RightTimeReader extends JFrame{
     private JPopupMenu.Separator jSeparator1;
  
     public RightTimeReader() throws HeadlessException {
+        Splash splash = new Splash();
+        splash.setVisible(true);
+        splash.setLocationRelativeTo(null);
+        try{
+            for(int i = 0; i < 50; i++){
+                Thread.sleep(20);
+                splash.progressBar.setValue(i);
+            }
+        }catch(Exception e){
+            
+        }
+        splash.setVisible(false);
         this.setTitle("RightTimeReader");
         this.setResizable(true);
+        ImageIcon icon = new javax.swing.ImageIcon(getClass().getResource("/Icons/rr16x16.png"));
+        Image img = icon.getImage();
+        this.setIconImage(img);
         
         initPanels();
         initToolBar();
