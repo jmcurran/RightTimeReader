@@ -22,6 +22,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -51,16 +52,21 @@ public class RightTimeReader extends JFrame{
     
     private JToolBar jToolBar;
     private JButton jButtonExit;
+    private JButton jButtonEdit;
+    private JButton jButtonNew;
     private JButton jButtonOpen;
+    
     
     private JMenuBar jMenuBar;
     private JMenu jMenuFile;
+    private JMenuItem jMenuItemEdit;
     private JMenuItem jMenuItemOpen;
+    private JMenuItem jMenuItemNew;
     private JMenuItem jMenuItemQuit;
     private JMenu jMenuHelp;
     private JMenuItem jMenuItemAbout;
     
-    private JPopupMenu.Separator jSeparator1;
+    private JPopupMenu.Separator jSeparator1, jSeparator2;
  
     public RightTimeReader() throws HeadlessException {
         Splash splash = new Splash();
@@ -138,6 +144,7 @@ public class RightTimeReader extends JFrame{
 
         jButtonOpen = new JButton();
         jButtonOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/book32x32.png"))); // NOI18N
+        jButtonOpen.setToolTipText("Open a book");
         jButtonOpen.setFocusable(false);
         jButtonOpen.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButtonOpen.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -145,8 +152,31 @@ public class RightTimeReader extends JFrame{
             openBookActionPerformed(evt);
         });
         jToolBar.add(jButtonOpen);
+        
+        jButtonEdit = new JButton();
+        jButtonEdit.setToolTipText("Edit a book");
+        jButtonEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/edit32x32.png"))); // NOI18N
+        jButtonEdit.setFocusable(false);
+        jButtonEdit.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButtonEdit.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButtonEdit.addActionListener((java.awt.event.ActionEvent evt) -> {
+            editBookActionPerformed(evt);
+        });
+        jToolBar.add(jButtonEdit);
+        
+        jButtonNew = new JButton();
+        jButtonNew.setToolTipText("New a book");
+        jButtonNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/new32x32.png"))); // NOI18N
+        jButtonNew.setFocusable(false);
+        jButtonNew.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButtonNew.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButtonNew.addActionListener((java.awt.event.ActionEvent evt) -> {
+            newBookActionPerformed(evt);
+        });
+        jToolBar.add(jButtonNew);
 
         jButtonExit = new JButton();
+        jButtonExit.setToolTipText("Quit RightTimeReader");
         jButtonExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/exit32x32.png"))); // NOI18N
         jButtonExit.setFocusable(false);
         jButtonExit.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -168,7 +198,7 @@ public class RightTimeReader extends JFrame{
         jMenuFile.setText("File");
 
         jMenuItemOpen = new JMenuItem();
-        jMenuItemOpen.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemOpen.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         jMenuItemOpen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/book16x16.png"))); // NOI18N
         jMenuItemOpen.setText("Open");
         jMenuItemOpen.addActionListener((java.awt.event.ActionEvent evt) -> {
@@ -179,9 +209,32 @@ public class RightTimeReader extends JFrame{
         //Separator
         jSeparator1 = new JPopupMenu.Separator();
         jMenuFile.add(jSeparator1);
+        
+        jMenuItemEdit = new JMenuItem();
+        jMenuItemEdit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        jMenuItemEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/edit16x16.png"))); // NOI18N
+        jMenuItemEdit.setText("Edit");
+        jMenuItemEdit.addActionListener((java.awt.event.ActionEvent evt) -> {
+            openBookActionPerformed(evt);
+        });
+        jMenuFile.add(jMenuItemEdit);
+        
+        jMenuItemNew = new JMenuItem();
+        jMenuItemNew.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        jMenuItemNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/new16x16.png"))); // NOI18N
+        jMenuItemNew.setText("New");
+        jMenuItemNew.addActionListener((java.awt.event.ActionEvent evt) -> {
+            openBookActionPerformed(evt);
+        });
+        jMenuFile.add(jMenuItemNew);
+        
+        
+        //Separator
+        jSeparator2 = new JPopupMenu.Separator();
+        jMenuFile.add(jSeparator2);
 
         jMenuItemQuit = new JMenuItem();
-        jMenuItemQuit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItemQuit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         jMenuItemQuit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/exit16x16.png"))); // NOI18N
         jMenuItemQuit.setText("Exit");
         jMenuItemQuit.addActionListener((java.awt.event.ActionEvent evt) -> {
@@ -233,8 +286,14 @@ public class RightTimeReader extends JFrame{
     
     private void exitActionPerformed(java.awt.event.ActionEvent evt) {   
         System.exit(0);
-    }                                               
-    
+    }   
+    private void editBookActionPerformed(java.awt.event.ActionEvent evt) {            
+        EditDialog dlg  = new EditDialog(this, theBook);
+        dlg.setVisible(true);
+    }
+    private void newBookActionPerformed(java.awt.event.ActionEvent evt) {            
+        
+    }
     private void openBookActionPerformed(java.awt.event.ActionEvent evt) {                                              
         Book b = loadUBK();
         

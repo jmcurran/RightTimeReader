@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -57,6 +58,13 @@ public class Book {
                 Logger.getLogger(Book.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        @Override
+        public String toString() {
+            return "Page " + number;
+        }
+        
+        
     }
     
     private boolean isLoaded;
@@ -78,6 +86,10 @@ public class Book {
         numPages = 0;
         pages = null;
         currentPage = 0;
+    }
+    
+    public Page[] getPages(){
+        return pages.toArray(new Page[pages.size()]);
     }
     
     public boolean getIsLoaded(){
