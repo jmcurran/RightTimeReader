@@ -20,21 +20,27 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.time.ZoneId;
 import javafx.scene.control.DatePicker;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -43,25 +49,23 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author James
  */
-public class EditDialog extends javax.swing.JDialog {
-    private class DetailsPanel extends JPanel{
-        
-        public DetailsPanel() {
-            
-        }
-        
-    }
-    
+public class EditDialog extends javax.swing.JDialog {    
     private Book book;
     int currentPage;
     private JTabbedPane tabPane;
+    private PagePanel pp;
+    private JTextField caption;
+    
     
     /**
      * Creates new form EditDialg
+     * @param parent
+     * @param book
      */
     public EditDialog(java.awt.Frame parent, Book book) {
         super(parent, true);
         //this.setUndecorated(true);
+        this.setTitle("Edit a book...");
          this.setLocationRelativeTo(parent);
         
         if(book == null){
@@ -161,19 +165,15 @@ public class EditDialog extends javax.swing.JDialog {
         
         
        tabPane = new JTabbedPane();
-       JPanel panel1 = makePanel();
+       BookDetailsPanel panel1 = new BookDetailsPanel();
        JPanel panel2 = makeContentsPanel();
        tabPane.add("Book Details", panel1);
        tabPane.add("Book Contents", panel2);
        this.add(tabPane);
-       
-       
-       
-               
     }
     
-    private JPanel makePanel(){
-        JPanel panel = new JPanel();
+    private BookDetailsPanel makePanel(){
+        BookDetailsPanel panel = new BookDetailsPanel();
         
         return panel;
     }
@@ -187,13 +187,26 @@ public class EditDialog extends javax.swing.JDialog {
         pageListPanel.setLayout(new GridBagLayout());
         
         GridBagConstraints c = new GridBagConstraints();
-        JScrollPane scrollPane = new JScrollPane();
+        
         JList pageList = new JList(book.getPages());
+        pageList.setDropMode(DropMode.INSERT);
+        pageList.setDragEnabled(true);
+        pageList.addListSelectionListener(new ListSelectionListener(){
+            @Override
+            public void valueChanged(ListSelectionEvent lse) {
+                int thePageNumber = pageList.getSelectedIndex();
+                if(thePageNumber != -1){
+                    book.setCurrentPage(thePageNumber);
+                    pp.setPage(book.getCurrentPage());
+                    caption.setText(book.getCurrentPageCaption());
+                }
+            }
+        });
+        JScrollPane scrollPane = new JScrollPane(pageList);
         c.gridx = 0;
         c.gridy = 0;
         c.fill = GridBagConstraints.BOTH;
-        scrollPane.add(pageList);
-        scrollPane.setViewportView(pageList);
+       
         pageListPanel.add(scrollPane, c);
         
         c = new GridBagConstraints();
@@ -209,6 +222,60 @@ public class EditDialog extends javax.swing.JDialog {
 
         JPanel pageDetailsPanel = new JPanel();
         pageDetailsPanel.setBorder(BorderFactory.createEtchedBorder());
+        pageDetailsPanel.setLayout(new GridBagLayout());
+        
+        pp = new PagePanel();
+        pp.setPage(book.getCurrentPage());
+        c = new GridBagConstraints();
+        
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 1;
+        c.weighty = 0.7;
+        c.fill = GridBagConstraints.BOTH;
+        c.insets = new Insets(0, 0, 0, 0);
+        pageDetailsPanel.add(pp, c);
+        
+        
+        caption = new JTextField(book.getCurrentPageCaption());
+        caption.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                Sentence s = new Sentence(caption.getText());
+                
+                if(s.getNumberOfWords() <= 2){
+                    Object[] options = {"OK", "CANCEL"};
+                    int ret = JOptionPane.showOptionDialog(null, 
+                            "Warning: Your sentence has very few words in it (delimited by :). If this is what you intended, then click OK, otherwise click Cancel",
+                            "Warning", 
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+                            null, options, options[0]);
+                    
+                    if(ret == JOptionPane.OK_OPTION){
+                        book.getCurrentPage().setCaption(caption.getText());
+                        pageDetailsPanel.revalidate();
+                        pageDetailsPanel.repaint();
+                    }else{
+                        caption.setText(book.getCurrentPageCaption());
+                    }
+                }else{
+                    book.getCurrentPage().setCaption(caption.getText());
+                    pp.revalidate();
+                    pp.repaint();
+                }
+            }
+        });
+        
+        c = new GridBagConstraints();
+        
+        c.gridx = 0;
+        c.gridy = 1;
+        c.weightx = 1;
+        c.weighty = 0.3;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        pageDetailsPanel.add(caption, c);
+        
+        
         
         
         c = new GridBagConstraints();

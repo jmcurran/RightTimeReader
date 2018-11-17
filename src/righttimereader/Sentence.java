@@ -47,6 +47,10 @@ public class Sentence {
         return words.get(currentWord);
     }
     
+    public int getNumberOfWords(){
+        return numWords;
+    }
+    
     
     public void setCurrentWord(){
         
@@ -97,4 +101,11 @@ public class Sentence {
     public void nextWord(){
         currentWord = currentWord < (numWords - 1) ? currentWord + 1 : 0;
     }
+
+    @Override
+    public String toString() {
+        return this.sentence;
+    }
+    
+    
 }

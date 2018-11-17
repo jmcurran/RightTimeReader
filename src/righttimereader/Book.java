@@ -58,6 +58,10 @@ public class Book {
                 Logger.getLogger(Book.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        
+        public void setCaption(String caption){
+            this.caption = caption;
+        }
 
         @Override
         public String toString() {
@@ -119,8 +123,12 @@ public class Book {
         return numPages;
     }
     
-    public int getCurrentPage(){
+    public int getCurrentPageNumber(){
         return currentPage;
+    }
+    
+    public Page getCurrentPage(){
+        return pages.get(currentPage);
     }
     
     public void setCurrentPage(int newPage){

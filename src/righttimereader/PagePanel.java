@@ -16,11 +16,14 @@
  */
 package righttimereader;
 
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
@@ -54,7 +57,7 @@ public class PagePanel extends JPanel{
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             Font font = new Font("Helvetica", Font.PLAIN, 10);
-            //Fontmetrics fm = g2d.getFontMetrics(font);
+            FontMetrics fm = g2d.getFontMetrics(font);
             
             int imageWidth = img.getWidth();
             int imageHeight = img.getHeight();
@@ -63,19 +66,37 @@ public class PagePanel extends JPanel{
             int panelHeight = getHeight();
             
             int newWidth = panelWidth;
-            int newHeight = panelHeight - ;
+            int newHeight = panelHeight - (int)(fm.getHeight() * 1.1);
             
             
+
+            Image scaledImage = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+            int x = 0;//(panelWidth - newWidth) / 2;
+            int y = 0;//(panelHeight - newHeight) / 2;
                 
-                Image scaledImage = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-                int x = (panelWidth - newWidth) / 2;
-                int y = (panelHeight - newHeight) / 2;
-                
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.drawImage(scaledImage, x, y, this);
-                g2d.dispose();
+            g2d.drawImage(scaledImage, x, y, this);
+            
+            x = (panelWidth - fm.stringWidth(sentence.toString())) / 2;
+            y = panelHeight ;
+            g2d.setFont(font);
+            
+            if(sentence != null){
+                for(String word : sentence.getWords()){
+                    int strWidth = fm.stringWidth(word);
+                    int top = newHeight + 1;
+                    int left = x - 1;
+                    g2d.setColor(Color.red);
+                    g2d.drawRect(left, top, strWidth + 1, (int)(fm.getHeight()*1.1));
+                    
+                    g2d.setColor(Color.black);
+                    g2d.drawString(word, x, y);
+                    x += fm.stringWidth(word + " ");
+                }
+            }
+            
+            g2d.dispose();
+        }
     }
-    
     
     
 }
