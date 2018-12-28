@@ -77,7 +77,7 @@ public class PagePanel extends JPanel{
             g2d.drawImage(scaledImage, x, y, this);
             
             x = (panelWidth - fm.stringWidth(sentence.toString())) / 2;
-            y = panelHeight ;
+            y = panelHeight - 2 ;
             g2d.setFont(font);
             
             if(sentence != null){
@@ -86,7 +86,7 @@ public class PagePanel extends JPanel{
                     int top = newHeight + 1;
                     int left = x - 1;
                     g2d.setColor(Color.red);
-                    g2d.drawRect(left, top, strWidth + 1, (int)(fm.getHeight()*1.1));
+                    g2d.drawRect(left, top, strWidth + 1, panelHeight - newHeight - 3);
                     
                     g2d.setColor(Color.black);
                     g2d.drawString(word, x, y);
@@ -97,6 +97,11 @@ public class PagePanel extends JPanel{
             g2d.dispose();
         }
     }
+
+    public void setSentence(Sentence sentence) {
+        this.sentence = sentence;
+    }
+    
     
     
 }

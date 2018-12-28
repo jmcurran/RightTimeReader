@@ -139,6 +139,17 @@ public class Book {
         }
     }
     
+    public void setCurrentPage(String strPage){
+        Pattern p = Pattern.compile("^Page (?<pagenum>[1-9]+[0-9]*)$");
+        Matcher m = p.matcher(strPage);
+        
+        if(m.matches()){
+            int newPage = Integer.parseInt(m.group("pagenum")) - 1;
+            setCurrentPage(newPage);
+        }
+        
+    }
+    
     private String readAuthor(List<String> bookLines){
         Pattern p = Pattern.compile("^#AUTHOR *(.*)$");
         
