@@ -36,11 +36,18 @@ public class Sentence {
     private int currentWord;
 
     public Sentence(String sentence) {
-        this.sentence = sentence;
-        
-        words = new ArrayList<>(Arrays.asList(sentence.split(":")));
-        numWords = words.size();
-        currentWord = -1;
+        if(sentence == null){
+            this.sentence = null;
+            words = new ArrayList<>();
+            numWords = 0;
+            currentWord = -1;
+        }else{
+            this.sentence = sentence;
+
+            words = new ArrayList<>(Arrays.asList(sentence.split(":")));
+            numWords = words.size();
+            currentWord = -1;
+        }
     }
     
     public String getCurrentWord(){

@@ -48,39 +48,37 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
- * @author James
+ * @author James Curran <james.m.curran@gmail.com>
  */
 public class EditDialog extends javax.swing.JDialog {
 
     private Book book;
-    private ArrayDeque<editAction> changeLog;
+    private ChangeLog changeLog;
     int currentPage;
-    int numNewPages;
     private JTabbedPane tabPane;
     private PagePanel pp;
     private JTextField caption;
     
     private JPanel pageListPanel;
     private JList pageList, list;
+    private File currentWorkingDirectory;
 
     /**
      * Creates new form EditDialg
      *
-     * @param parent
-     * @param book
+     * @param parent parent frame
+     * @param book the book that is being edited. 
      */
     public EditDialog(java.awt.Frame parent, Book book) {
         super(parent, true);
         //this.setUndecorated(true);
         this.setTitle("Edit a book...");
         this.setLocationRelativeTo(parent);
-        changeLog = new ArrayDeque<>();
-        numNewPages = 0;
-
+        changeLog = new ChangeLog();
+ 
         if (book == null) {
-            JFileChooser fc = new JFileChooser();
-            File theDirectory = new File("D:/Dropbox/ALL-RTR-FILES/JamieTestSoftware/mag/mag");
-            fc.setCurrentDirectory(theDirectory);
+            currentWorkingDirectory = new File("D:/Dropbox/ALL-RTR-FILES/JamieTestSoftware/mag/mag");
+            JFileChooser fc = new JFileChooser(currentWorkingDirectory);
             FileFilter filter = new FileNameExtensionFilter("RightTimerReader File", "ubk", "ubook");
             fc.setFileFilter(filter);
 
@@ -205,7 +203,7 @@ public class EditDialog extends javax.swing.JDialog {
         this.add(tabPane);
     }
     
-    void insertNewPage(boolean before, int selectedIndex, Path imagePath){
+    void insertNewPage(boolean below, int selectedIndex, Path imagePath){
         Book.Page p = book.new Page(book.getNumPages(), imagePath, null);
         book.addPage(p);
  
@@ -213,20 +211,69 @@ public class EditDialog extends javax.swing.JDialog {
         ArrayList<Object> data = new ArrayList();
 
         for (int i = 0; i < lm.getSize(); i++) {
-            if(before){
-                if (i == selectedIndex) {
-                    data.add("New Page " + numNewPages);
-                    numNewPages++;
-                }
-
-                data.add(lm.getElementAt(i));
-            }else{
+            if(below){
                 data.add(lm.getElementAt(i));
                 
                 if (i == selectedIndex) {
-                    data.add("New Page " + numNewPages);
-                    numNewPages++;
+                    data.add("Page " + book.getNumPages());
                 }
+            }else{
+                if (i == selectedIndex) {
+                    data.add("Page " + book.getNumPages());
+                }
+
+                data.add(lm.getElementAt(i));
+            }
+        }
+
+        Object[] odata = data.toArray(new Object[data.size()]);
+        list.setListData(odata);
+        
+        changeLog.add(new editAction(editAction.editType.ADD, 
+                                         selectedIndex));
+    }
+    
+    void movePage(boolean down, int selectedIndex) {
+        ListModel lm = list.getModel();
+
+        ArrayList<Object> data = new ArrayList();
+
+        for (int i = 0; i < lm.getSize(); i++) {
+            data.add(lm.getElementAt(i));
+        }
+        
+        int move = 0;
+        if(down){
+            move = +1;
+        }else{
+            move = -1;
+        }
+
+        Object tmp = data.get(selectedIndex + move);
+        data.set(selectedIndex + move, data.get(selectedIndex));
+        data.set(selectedIndex, tmp);
+
+        Object[] odata = data.toArray(new Object[data.size()]);
+        list.setListData(odata);
+
+        changeLog.add(new editAction(editAction.editType.ORDER,
+                selectedIndex,
+                selectedIndex,
+                selectedIndex + move));
+    }
+    
+    void removePage(int selectedIndex) {
+        ListModel lm = list.getModel();
+
+        changeLog.add(new editAction(editAction.editType.REMOVE,
+                selectedIndex,
+                lm.getElementAt(selectedIndex)));
+
+        ArrayList<Object> data = new ArrayList();
+
+        for (int i = 0; i < lm.getSize(); i++) {
+            if (i != selectedIndex) {
+                data.add(lm.getElementAt(i));
             }
         }
 
@@ -275,73 +322,22 @@ public class EditDialog extends javax.swing.JDialog {
 
                         JMenuItem moveUp = new JMenuItem("Move Up");
                         moveUp.addActionListener((ActionEvent ae) -> {
-                            ListModel lm = list.getModel();
-
-                            ArrayList<Object> data = new ArrayList();
-
-                            for (int i = 0; i < lm.getSize(); i++) {
-                                data.add(lm.getElementAt(i));
-                            }
-
-                            Object tmp = data.get(selectedIndex - 1);
-                            data.set(selectedIndex - 1, data.get(selectedIndex));
-                            data.set(selectedIndex, tmp);
-
-                            Object[] odata = data.toArray(new Object[data.size()]);
-                            list.setListData(odata);
-
-                            changeLog.addLast(new editAction(editAction.editType.ORDER,
-                                    selectedIndex,
-                                    selectedIndex,
-                                    selectedIndex - 1));
+                            movePage(false, selectedIndex);
                         });
 
                         JMenuItem moveDown = new JMenuItem("Move Down");
                         moveDown.addActionListener((ActionEvent ae) -> {
-                            ListModel lm = list.getModel();
-
-                            ArrayList<Object> data = new ArrayList();
-
-                            for (int i = 0; i < lm.getSize(); i++) {
-                                data.add(lm.getElementAt(i));
-                            }
-
-                            Object tmp = data.get(selectedIndex + 1);
-                            data.set(selectedIndex + 1, data.get(selectedIndex));
-                            data.set(selectedIndex, tmp);
-
-                            Object[] odata = data.toArray(new Object[data.size()]);
-                            list.setListData(odata);
-
-                            changeLog.addLast(new editAction(editAction.editType.ORDER,
-                                    selectedIndex,
-                                    selectedIndex,
-                                    selectedIndex + 1));
+                            movePage(true, selectedIndex);
                         });
 
-                        JMenuItem removePage = new JMenuItem("Remove Page");
-                        removePage.addActionListener((ActionEvent ae) -> {
-                            ListModel lm = list.getModel();
-
-                            changeLog.addLast(new editAction(editAction.editType.REMOVE,
-                                    selectedIndex,
-                                    lm.getElementAt(selectedIndex)));
-
-                            ArrayList<Object> data = new ArrayList();
-
-                            for (int i = 0; i < lm.getSize(); i++) {
-                                if (i != selectedIndex) {
-                                    data.add(lm.getElementAt(i));
-                                }
-                            }
-
-                            Object[] odata = data.toArray(new Object[data.size()]);
-                            list.setListData(odata);
+                        JMenuItem miRemovePage = new JMenuItem("Remove Page");
+                        miRemovePage.addActionListener((ActionEvent ae) -> {
+                            removePage(selectedIndex);
                         });
 
                         JMenuItem addPageAbove = new JMenuItem("Add Page Above");
                         addPageAbove.addActionListener((ActionEvent ae) -> {
-                            JFileChooser fc = new JFileChooser();
+                            JFileChooser fc = new JFileChooser(currentWorkingDirectory);
                             FileNameExtensionFilter ff = new FileNameExtensionFilter("Image files (*.bmp;*.gif;*.jpg;*.jpeg;*.png",
                                     "bmp", "gif", "jpg", "jpeg", "png");
 
@@ -357,7 +353,7 @@ public class EditDialog extends javax.swing.JDialog {
 
                         JMenuItem addPageBelow = new JMenuItem("Add Page Below");
                         addPageBelow.addActionListener((ActionEvent ae) -> {
-                            JFileChooser fc = new JFileChooser();
+                            JFileChooser fc = new JFileChooser(currentWorkingDirectory);
                             FileNameExtensionFilter ff = new FileNameExtensionFilter("Image files (*.bmp;*.gif;*.jpg;*.jpeg;*.png",
                                     "bmp", "gif", "jpg", "jpeg", "png");
 
@@ -381,7 +377,7 @@ public class EditDialog extends javax.swing.JDialog {
 
                         menu.add(addPageAbove);
                         menu.add(addPageBelow);
-                        menu.add(removePage);
+                        menu.add(miRemovePage);
 
                         menu.show(me.getComponent(), me.getX(), me.getY());
                     }

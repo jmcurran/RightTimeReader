@@ -22,6 +22,7 @@ package righttimereader;
  */
 public class editAction {
     public enum editType {
+        ADD,
         IMAGE,
         ORDER,
         REMOVE,
@@ -45,6 +46,14 @@ public class editAction {
         this.type = type;
         this.pageNumber = pageNumber;
         this.pageData = pageData;
+        this.from = null;
+        this.to = null;
+    }    
+    
+    public editAction(editType type, int pageNumber) {
+        this.type = type;
+        this.pageNumber = pageNumber;
+        this.pageData = null;
         this.from = null;
         this.to = null;
     }    

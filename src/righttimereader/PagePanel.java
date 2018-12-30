@@ -76,11 +76,11 @@ public class PagePanel extends JPanel{
                 
             g2d.drawImage(scaledImage, x, y, this);
             
-            x = (panelWidth - fm.stringWidth(sentence.toString())) / 2;
-            y = panelHeight - 2 ;
-            g2d.setFont(font);
+            if(sentence != null && sentence.getNumberOfWords() > 0){
+                x = (panelWidth - fm.stringWidth(sentence.toString())) / 2;
+                y = panelHeight - 2 ;
+                g2d.setFont(font);
             
-            if(sentence != null){
                 for(String word : sentence.getWords()){
                     int strWidth = fm.stringWidth(word);
                     int top = newHeight + 1;

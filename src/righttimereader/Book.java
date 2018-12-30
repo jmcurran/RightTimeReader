@@ -92,6 +92,11 @@ public class Book {
         currentPage = 0;
     }
     
+    public void addPage(Page p){
+        pages.add(p);
+        numPages++;
+    }
+    
     public Page[] getPages(){
         return pages.toArray(new Page[pages.size()]);
     }
@@ -147,7 +152,6 @@ public class Book {
             int newPage = Integer.parseInt(m.group("pagenum")) - 1;
             setCurrentPage(newPage);
         }
-        
     }
     
     private String readAuthor(List<String> bookLines){
