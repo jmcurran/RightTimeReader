@@ -24,9 +24,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.DropMode;
@@ -62,6 +63,10 @@ public class EditDialog extends javax.swing.JDialog {
     private JPanel pageListPanel;
     private JList pageList, list;
     private File currentWorkingDirectory;
+    private JButton buttonSave;
+    private JButton buttonCancel;
+    private BookDetailsPanel detailsPanel;
+    private JPanel contentsPanel;
 
     /**
      * Creates new form EditDialg
@@ -75,6 +80,15 @@ public class EditDialog extends javax.swing.JDialog {
         this.setTitle("Edit a book...");
         this.setLocationRelativeTo(parent);
         changeLog = new ChangeLog();
+        changeLog.addPropertyChangeListener((PropertyChangeEvent pce) -> {
+            if((Integer)pce.getNewValue() > 0){
+                if(contentsPanel != null){
+                    buttonSave.setEnabled(true);
+                }else{
+                    buttonSave.setEnabled(false);
+                }
+            }
+        });
  
         if (book == null) {
             currentWorkingDirectory = new File("D:/Dropbox/ALL-RTR-FILES/JamieTestSoftware/mag/mag");
@@ -105,7 +119,7 @@ public class EditDialog extends javax.swing.JDialog {
      * @return
      */
     public boolean isChanged() {
-        return changeLog.size() > 0;
+        return changeLog.getSize() > 0;
     }
 
     /**
@@ -127,79 +141,11 @@ public class EditDialog extends javax.swing.JDialog {
     }
 
     private void initComponents() {
-        /*this.setLayout(new GridBagLayout());
-        
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.weightx = 0.3;
-        c.weighty = 0.2;
-        c.anchor = GridBagConstraints.EAST;
-        
-        JLabel labelTitle  = new JLabel("Title:");
-        this.add(labelTitle, c);
-        
-        c.gridx = 1;
-        c.gridy = 0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.7;
-        
-        JTextField tfTitle = new JTextField(book.getTitle());
-        this.add(tfTitle, c);
-        
-        c.gridx = 0;
-        c.gridy = 1;
-        c.weightx = 0.3;
-        c.weighty = 0.2;
-        c.anchor = GridBagConstraints.EAST;
-        
-        JLabel labelAuthor  = new JLabel("Author:");
-        this.add(labelAuthor, c);
-        
-        c.gridx = 1;
-        c.gridy = 1;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.7;
-        
-        JTextField tfAuthor = new JTextField(book.getAuthor());
-        this.add(tfAuthor, c);
-        
-        c.gridx = 0;
-        c.gridy = 2;
-        c.weightx = 0.3;
-        c.weighty = 0.2;
-        
-        JLabel labelRevisionDate  = new JLabel("Revision Date:");
-        this.add(labelRevisionDate, c);
-        
-        c.gridx = 1;
-        c.gridy = 2;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.7;
-        
-        //DatePicker dp = new DatePicker(book.getRevisionDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-        //this.add(dp, c);
-        
-        c.gridx = 1;
-        c.gridy = 3;
-        c.anchor = GridBagConstraints.CENTER;
-        c.fill = GridBagConstraints.BOTH;
-        c.weighty = 0.2;
-        
-        JPanel panelButtons = new JPanel();
-        panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
-        JButton nextButton = new JButton("Next");
-        JButton cancelButton = new JButton("Cancel");
-        panelButtons.add(nextButton);
-        panelButtons.add(cancelButton);
-        
-        this.add(panelButtons, c);*/
-
         tabPane = new JTabbedPane();
-        BookDetailsPanel panel1 = ((book == null) ? new BookDetailsPanel(this, null) : new BookDetailsPanel(this, book));
-        JPanel panel2 = makeContentsPanel();
-        tabPane.add("Book Details", panel1);
-        tabPane.add("Book Contents", panel2);
+        detailsPanel = ((book == null) ? new BookDetailsPanel(this, null) : new BookDetailsPanel(this, book));
+        contentsPanel = makeContentsPanel();
+        tabPane.add("Book Details", detailsPanel);
+        tabPane.add("Book Contents", contentsPanel);
         this.add(tabPane);
     }
     
@@ -229,7 +175,7 @@ public class EditDialog extends javax.swing.JDialog {
         Object[] odata = data.toArray(new Object[data.size()]);
         list.setListData(odata);
         
-        changeLog.add(new editAction(editAction.editType.ADD, 
+        changeLog.addEvent(new editAction(editAction.editType.ADD, 
                                          selectedIndex));
     }
     
@@ -256,7 +202,7 @@ public class EditDialog extends javax.swing.JDialog {
         Object[] odata = data.toArray(new Object[data.size()]);
         list.setListData(odata);
 
-        changeLog.add(new editAction(editAction.editType.ORDER,
+        changeLog.addEvent(new editAction(editAction.editType.ORDER,
                 selectedIndex,
                 selectedIndex,
                 selectedIndex + move));
@@ -265,7 +211,7 @@ public class EditDialog extends javax.swing.JDialog {
     void removePage(int selectedIndex) {
         ListModel lm = list.getModel();
 
-        changeLog.add(new editAction(editAction.editType.REMOVE,
+        changeLog.addEvent(new editAction(editAction.editType.REMOVE,
                 selectedIndex,
                 lm.getElementAt(selectedIndex)));
 
@@ -500,7 +446,7 @@ public class EditDialog extends javax.swing.JDialog {
         c.fill = GridBagConstraints.HORIZONTAL;
         pageDetailsPanel.add(caption, c);
 
-        JButton buttonSave = new JButton("Save");
+        buttonSave = new JButton("Save");
         buttonSave.setEnabled(false);
 
         c = new GridBagConstraints();
@@ -511,7 +457,7 @@ public class EditDialog extends javax.swing.JDialog {
         c.fill = GridBagConstraints.HORIZONTAL;
         pageDetailsPanel.add(buttonSave, c);
 
-        JButton buttonCancel = new JButton("Cancel");
+        buttonCancel = new JButton("Cancel");
         buttonCancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {

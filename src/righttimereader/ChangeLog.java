@@ -16,6 +16,7 @@
  */
 package righttimereader;
 
+import java.beans.PropertyChangeListener;
 import java.util.ArrayDeque;
 import javax.swing.event.SwingPropertyChangeSupport;
 
@@ -24,23 +25,39 @@ import javax.swing.event.SwingPropertyChangeSupport;
  * @author James Curran <james.m.curran@gmail.com>
  */
 public class ChangeLog {
+    SwingPropertyChangeSupport changeSupport = new SwingPropertyChangeSupport(this);
+        
     private ArrayDeque<editAction> eventLog;
+    private int size;
 
     public ChangeLog() {
         this.eventLog = new ArrayDeque<>();
+        size = 0;
     }
     
     public void addEvent(editAction ae){
         eventLog.addLast(ae);
+        setSize(size + 1);
     }
     
     public void removeEvent(){
         if(!eventLog.isEmpty()){
             eventLog.removeLast();
+            setSize(size - 1);
         }
     }
     
-    public int size(){
-        return eventLog.size();
+    public void setSize(int size){
+        changeSupport.firePropertyChange("size", this.size, size);
+        this.size = size;
     }
+
+    public int getSize() {
+        return size;
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+    
 }
