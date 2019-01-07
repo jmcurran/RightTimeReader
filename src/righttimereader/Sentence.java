@@ -24,6 +24,8 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -50,12 +52,33 @@ public class Sentence {
         }
     }
     
+    public boolean containsSpacesNoColons(){
+        Pattern p = Pattern.compile("[:]+");
+        Matcher m = p.matcher(sentence);
+        
+        boolean colons = m.find();
+        
+        p = Pattern.compile("\\s+");
+        m = p.matcher(sentence);
+        
+        boolean spaces = m.find();
+        
+        return (spaces & !colons);
+    }
+    
     public String getCurrentWord(){
         return words.get(currentWord);
     }
     
     public int getNumberOfWords(){
         return numWords;
+    }
+    
+    public void rebuildSentence(){
+        this.sentence = this.sentence.replaceAll("\\s+", ":");
+        words = new ArrayList<>(Arrays.asList(sentence.split(":")));
+        numWords = words.size();
+        currentWord = -1;
     }
     
     

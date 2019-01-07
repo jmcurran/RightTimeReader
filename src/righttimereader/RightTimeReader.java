@@ -224,7 +224,7 @@ public class RightTimeReader extends JFrame{
         jMenuItemNew.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Icons/new16x16.png"))); // NOI18N
         jMenuItemNew.setText("New");
         jMenuItemNew.addActionListener((java.awt.event.ActionEvent evt) -> {
-            openBookActionPerformed(evt);
+            newBookActionPerformed(evt);
         });
         jMenuFile.add(jMenuItemNew);
         
@@ -281,6 +281,8 @@ public class RightTimeReader extends JFrame{
     
     private void aboutActionPerformed(java.awt.event.ActionEvent evt) {   
         AboutDialog dlg = new AboutDialog();
+        pack();
+        dlg.setLocationRelativeTo(this.getParent());
         dlg.setVisible(true);
     }                                
     
@@ -289,9 +291,18 @@ public class RightTimeReader extends JFrame{
     }   
     private void editBookActionPerformed(java.awt.event.ActionEvent evt) {            
         EditDialog dlg  = new EditDialog(this, theBook);
+        pack();
+        dlg.setLocationRelativeTo(this.getParent());
         dlg.setVisible(true);
     }
     private void newBookActionPerformed(java.awt.event.ActionEvent evt) {            
+        theBook = new Book();
+        
+        EditDialog dlg  = new EditDialog(this, theBook);
+        pack();
+        dlg.setLocationRelativeTo(this.getParent());
+        dlg.setVisible(true);
+        
         
     }
     private void openBookActionPerformed(java.awt.event.ActionEvent evt) {                                              

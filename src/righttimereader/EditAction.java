@@ -20,21 +20,21 @@ package righttimereader;
  *
  * @author James Curran <james.m.curran@gmail.com>
  */
-public class editAction {
-    public enum editType {
+public class EditAction {
+    public enum EditType {
         ADD,
         IMAGE,
         ORDER,
         REMOVE,
         SENTENCE}
     
-    private final editType type;
+    private final EditType type;
     private final int pageNumber;
     private final Object from;
     private final Object to;
     private final Object pageData;
 
-    public editAction(editType type, int pageNumber, Object from, Object to) {
+    public EditAction(EditType type, int pageNumber, Object from, Object to) {
         this.type = type;
         this.pageNumber = pageNumber;
         this.from = from;
@@ -42,7 +42,7 @@ public class editAction {
         this.pageData = null;
     }    
     
-    public editAction(editType type, int pageNumber, Object pageData) {
+    public EditAction(EditType type, int pageNumber, Object pageData) {
         this.type = type;
         this.pageNumber = pageNumber;
         this.pageData = pageData;
@@ -50,7 +50,7 @@ public class editAction {
         this.to = null;
     }    
     
-    public editAction(editType type, int pageNumber) {
+    public EditAction(EditType type, int pageNumber) {
         this.type = type;
         this.pageNumber = pageNumber;
         this.pageData = null;

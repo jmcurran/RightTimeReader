@@ -41,8 +41,10 @@ public class PagePanel extends JPanel{
     }
     
     public void setPage(Book.Page page){
-        img = page.image;
-        sentence = new Sentence(page.caption);
+        if(page != null){
+            img = page.image;
+            sentence = new Sentence(page.caption);
+        }
     }
 
     @Override

@@ -19,11 +19,14 @@ package righttimereader;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -93,11 +96,17 @@ public class Book {
     }
     
     public void addPage(Page p){
+        if(pages == null){
+            pages = new ArrayList<Page>();
+        }
         pages.add(p);
         numPages++;
     }
     
     public Page[] getPages(){
+        if(pages == null || pages.size() == 0)
+            return null;
+        
         return pages.toArray(new Page[pages.size()]);
     }
     
@@ -133,7 +142,23 @@ public class Book {
     }
     
     public Page getCurrentPage(){
+        if(pages == null || pages.size() == 0)
+            return null;
+        
         return pages.get(currentPage);
+    }
+    
+    public void reorderPages(ArrayList<Integer> order){
+        ArrayList<Page> newPages = new ArrayList<>();
+        
+        for(int i = 0; i < order.size(); i++){
+            Page p = pages.get(order.get(i));
+            p.number = i + 1;
+            newPages.add(p);
+        }
+        
+        pages = newPages;
+        
     }
     
     public void setCurrentPage(int newPage){
@@ -172,6 +197,9 @@ public class Book {
     }
     
     public String getCurrentPageCaption(){
+        if(pages == null || pages.size() == 0)
+            return null;
+        
         return pages.get(currentPage).caption;
     }
     
@@ -297,6 +325,55 @@ public class Book {
             Logger.getLogger(Book.class.getName()).log(Level.SEVERE, null, e);
         }
         
+    }
+    
+    public void writeUBK(File bookFileName){
+        BufferedWriter bw = null;
+        
+        try{
+            ArrayList<String> lines = new ArrayList<>();
+            
+            lines.add(String.format("#TITLE %s", this.title));
+            lines.add(String.format("#AUTHOR %s", this.author));
+            
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
+            lines.add(String.format("#REVDATE %s", dateFormat.format(new Date())));
+            
+            lines.add(String.format("#PAGES %d", this.numPages));
+            
+            Path bookRoot = bookFileName.getParentFile().toPath();
+            
+            for(Page p : pages){
+                lines.add(String.format("#PAGE %d", p.number));
+                
+                Path relativeImagePath = bookRoot.relativize(p.imageFile.toPath());
+                
+                lines.add(String.format("#IMAGE %s", relativeImagePath.toString()));
+                if(p.caption != null){
+                    lines.add(String.format("#CAPTION %s", p.caption));
+                }else{
+                    lines.add(String.format("#CAPTION %s", ""));
+                }
+            }
+            
+            FileWriter fw = new FileWriter(bookFileName);
+            bw = new BufferedWriter(fw);
+            
+            for(String line : lines){
+                bw.write(line);
+                bw.newLine();
+            }            
+        }catch(IOException e){
+            Logger.getLogger(Book.class.getName()).log(Level.SEVERE, null, e);
+        }finally
+	{ 
+	   try{
+	      if(bw!=null)
+		 bw.close();
+	   }catch(Exception ex){
+	       System.out.println("Error in closing the BufferedWriter"+ex);
+	    }
+	}
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {

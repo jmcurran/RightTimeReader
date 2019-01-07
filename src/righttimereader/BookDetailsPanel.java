@@ -16,6 +16,9 @@
  */
 package righttimereader;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
@@ -32,10 +35,29 @@ public class BookDetailsPanel extends javax.swing.JPanel {
         
         initComponents();
         if(b != null){
-            tfTitle.setText(b.getTitle());
-            tfAuthor.setText(b.getAuthor());
-            tfRevDate.setText(b.getRevisionDate().toString());
-            tfNumPages.setText(String.format("%d", b.getNumPages()));
+            String strTitle = b.getTitle();
+            if(strTitle != null){
+                tfTitle.setText(strTitle);
+            }else{
+                tfTitle.setText("Unknown Title");
+            }
+            
+            String strAuthor = b.getAuthor();
+            if(strAuthor != null){
+                tfAuthor.setText(strAuthor);
+            }else{
+                tfAuthor.setText("Unknown Author");
+            }
+            
+            Date revDate = b.getRevisionDate();
+            if(revDate == null){
+                revDate = new Date();
+            }
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            tfRevDate.setText(dateFormat.format(revDate));
+            
+            int numPages = 0;
+            tfNumPages.setText(String.format("%d", numPages));
         }
     }
 

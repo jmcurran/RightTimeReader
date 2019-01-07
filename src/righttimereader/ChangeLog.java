@@ -27,7 +27,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 public class ChangeLog {
     SwingPropertyChangeSupport changeSupport = new SwingPropertyChangeSupport(this);
         
-    private ArrayDeque<editAction> eventLog;
+    private ArrayDeque<EditAction> eventLog;
     private int size;
 
     public ChangeLog() {
@@ -35,7 +35,7 @@ public class ChangeLog {
         size = 0;
     }
     
-    public void addEvent(editAction ae){
+    public void addEvent(EditAction ae){
         eventLog.addLast(ae);
         setSize(size + 1);
     }

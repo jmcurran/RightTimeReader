@@ -22,6 +22,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -29,6 +31,10 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.DropMode;
 import javax.swing.JButton;
@@ -104,9 +110,11 @@ public class EditDialog extends javax.swing.JDialog {
                 initComponents();
                 this.pack();
             } else {
+                this.dispose();
                 this.setVisible(false);
             }
         } else {
+            currentWorkingDirectory = new File("D:/Dropbox/ALL-RTR-FILES/JamieTestSoftware/mag/mag");
             this.book = book;
             initComponents();
             this.pack();
@@ -135,8 +143,9 @@ public class EditDialog extends javax.swing.JDialog {
             if (ret == JOptionPane.YES_OPTION) {
                 saveChanges();
             }
+            this.dispose();
         } else {
-            this.setVisible(false);
+            this.dispose();
         }
     }
 
@@ -147,6 +156,34 @@ public class EditDialog extends javax.swing.JDialog {
         tabPane.add("Book Details", detailsPanel);
         tabPane.add("Book Contents", contentsPanel);
         this.add(tabPane);
+    }
+    
+    void addPages(){
+        JFileChooser fc = new JFileChooser(currentWorkingDirectory);
+        fc.setMultiSelectionEnabled(true);
+        FileNameExtensionFilter ff = new FileNameExtensionFilter("Image files (*.bmp;*.gif;*.jpg;*.jpeg;*.png",
+                                        "bmp", "gif", "jpg", "jpeg", "png");
+
+        fc.setFileFilter(ff);
+        fc.setDialogTitle("Choose images...");
+
+        int retVal = fc.showOpenDialog(pp);
+        
+        if(retVal == JFileChooser.APPROVE_OPTION){
+            File[] files = fc.getSelectedFiles();
+            int pageNumber = 1;
+            
+            for(File imgFile : files){
+                Book.Page p  = book.new Page(pageNumber++, imgFile.toPath(), null);
+                book.addPage(p);
+                changeLog.addEvent(new EditAction(EditAction.EditType.ADD, p.number));
+            }
+        }
+        
+        pageList.setListData(book.getPages());
+        
+        
+        
     }
     
     void insertNewPage(boolean below, int selectedIndex, Path imagePath){
@@ -175,7 +212,7 @@ public class EditDialog extends javax.swing.JDialog {
         Object[] odata = data.toArray(new Object[data.size()]);
         list.setListData(odata);
         
-        changeLog.addEvent(new editAction(editAction.editType.ADD, 
+        changeLog.addEvent(new EditAction(EditAction.EditType.ADD, 
                                          selectedIndex));
     }
     
@@ -202,16 +239,35 @@ public class EditDialog extends javax.swing.JDialog {
         Object[] odata = data.toArray(new Object[data.size()]);
         list.setListData(odata);
 
-        changeLog.addEvent(new editAction(editAction.editType.ORDER,
+        changeLog.addEvent(new EditAction(EditAction.EditType.ORDER,
                 selectedIndex,
                 selectedIndex,
                 selectedIndex + move));
     }
     
+    public ArrayList<Integer> getPageOrder() throws PageNumberException{
+        ListModel lm  = pageList.getModel();
+        ArrayList<Integer> order = new ArrayList<>();
+
+        for(int i = 0; i < lm.getSize(); i++){
+            String strPage = (String)lm.getElementAt(i).toString();
+            Pattern p = Pattern.compile("^Page (?<pagenum>[1-9]+[0-9]*)$");
+            Matcher m = p.matcher(strPage);
+
+            if(m.matches()){
+                order.add(Integer.parseInt(m.group("pagenum")) - 1);
+            }else{
+                throw new PageNumberException(strPage);
+            }
+        }
+        
+        return order;
+    }
+    
     void removePage(int selectedIndex) {
         ListModel lm = list.getModel();
 
-        changeLog.addEvent(new editAction(editAction.editType.REMOVE,
+        changeLog.addEvent(new EditAction(EditAction.EditType.REMOVE,
                 selectedIndex,
                 lm.getElementAt(selectedIndex)));
 
@@ -251,7 +307,11 @@ public class EditDialog extends javax.swing.JDialog {
 
         GridBagConstraints c = new GridBagConstraints();
 
-        pageList = new JList(book.getPages());
+        if(book.getPages() !=  null){
+            pageList = new JList(book.getPages());
+        }else{
+            pageList = new JList();
+        }
         pageList.setDropMode(DropMode.INSERT);
         pageList.setDragEnabled(true);
         pageList.addMouseListener(new MouseAdapter() {
@@ -262,75 +322,90 @@ public class EditDialog extends javax.swing.JDialog {
 
                     int selectedIndex = list.getSelectedIndex();
                     int listLength = list.getModel().getSize();
-
-                    if (selectedIndex != -1) {
+                    
+                    if(listLength == 0){
                         JPopupMenu menu = new JPopupMenu();
 
-                        JMenuItem moveUp = new JMenuItem("Move Up");
-                        moveUp.addActionListener((ActionEvent ae) -> {
-                            movePage(false, selectedIndex);
+                        JMenuItem miAddPages = new JMenuItem("Add Pages");
+                        miAddPages.addActionListener((ActionEvent ae) -> {
+                            addPages();
                         });
-
-                        JMenuItem moveDown = new JMenuItem("Move Down");
-                        moveDown.addActionListener((ActionEvent ae) -> {
-                            movePage(true, selectedIndex);
-                        });
-
-                        JMenuItem miRemovePage = new JMenuItem("Remove Page");
-                        miRemovePage.addActionListener((ActionEvent ae) -> {
-                            removePage(selectedIndex);
-                        });
-
-                        JMenuItem addPageAbove = new JMenuItem("Add Page Above");
-                        addPageAbove.addActionListener((ActionEvent ae) -> {
-                            JFileChooser fc = new JFileChooser(currentWorkingDirectory);
-                            FileNameExtensionFilter ff = new FileNameExtensionFilter("Image files (*.bmp;*.gif;*.jpg;*.jpeg;*.png",
-                                    "bmp", "gif", "jpg", "jpeg", "png");
-
-                            fc.setFileFilter(ff);
-                            fc.setDialogTitle("Choose an image...");
-
-                            int retVal = fc.showOpenDialog(pp);
-
-                            if (retVal == JFileChooser.APPROVE_OPTION) {
-                               insertNewPage(false, selectedIndex, fc.getSelectedFile().toPath());
-                            }
-                        });
-
-                        JMenuItem addPageBelow = new JMenuItem("Add Page Below");
-                        addPageBelow.addActionListener((ActionEvent ae) -> {
-                            JFileChooser fc = new JFileChooser(currentWorkingDirectory);
-                            FileNameExtensionFilter ff = new FileNameExtensionFilter("Image files (*.bmp;*.gif;*.jpg;*.jpeg;*.png",
-                                    "bmp", "gif", "jpg", "jpeg", "png");
-
-                            fc.setFileFilter(ff);
-                            fc.setDialogTitle("Choose an image...");
-
-                            int retVal = fc.showOpenDialog(pp);
-
-                            if (retVal == JFileChooser.APPROVE_OPTION) {
-                                insertNewPage(true, selectedIndex, fc.getSelectedFile().toPath());
-                            }
-                        });
-
-                        if (selectedIndex != 0) {
-                            menu.add(moveUp);
-                        }
-
-                        if (selectedIndex < (listLength - 1)) {
-                            menu.add(moveDown);
-                        }
-
-                        menu.add(addPageAbove);
-                        menu.add(addPageBelow);
-                        menu.add(miRemovePage);
-
+                        menu.add(miAddPages);
                         menu.show(me.getComponent(), me.getX(), me.getY());
+                    }else{
+                        if (selectedIndex != -1) {
+                            JPopupMenu menu = new JPopupMenu();
+
+                            JMenuItem moveUp = new JMenuItem("Move Up");
+                            moveUp.addActionListener((ActionEvent ae) -> {
+                                movePage(false, selectedIndex);
+                            });
+
+                            JMenuItem moveDown = new JMenuItem("Move Down");
+                            moveDown.addActionListener((ActionEvent ae) -> {
+                                movePage(true, selectedIndex);
+                            });
+
+                            JMenuItem miRemovePage = new JMenuItem("Remove Page");
+                            miRemovePage.addActionListener((ActionEvent ae) -> {
+                                removePage(selectedIndex);
+                            });
+
+                            JMenuItem addPageAbove = new JMenuItem("Add Page Above");
+                            addPageAbove.addActionListener((ActionEvent ae) -> {
+                                JFileChooser fc = new JFileChooser(currentWorkingDirectory);
+                                FileNameExtensionFilter ff = new FileNameExtensionFilter("Image files (*.bmp;*.gif;*.jpg;*.jpeg;*.png",
+                                        "bmp", "gif", "jpg", "jpeg", "png");
+
+                                fc.setFileFilter(ff);
+                                fc.setDialogTitle("Choose an image...");
+
+                                int retVal = fc.showOpenDialog(pp);
+
+                                if (retVal == JFileChooser.APPROVE_OPTION) {
+                                   insertNewPage(false, selectedIndex, fc.getSelectedFile().toPath());
+                                   pageList.setSelectedIndex(selectedIndex - 1);
+                                   pageList.ensureIndexIsVisible(selectedIndex - 1);
+                                }
+                            });
+
+                            JMenuItem addPageBelow = new JMenuItem("Add Page Below");
+                            addPageBelow.addActionListener((ActionEvent ae) -> {
+                                JFileChooser fc = new JFileChooser(currentWorkingDirectory);
+                                FileNameExtensionFilter ff = new FileNameExtensionFilter("Image files (*.bmp;*.gif;*.jpg;*.jpeg;*.png",
+                                        "bmp", "gif", "jpg", "jpeg", "png");
+
+                                fc.setFileFilter(ff);
+                                fc.setDialogTitle("Choose an image...");
+
+                                int retVal = fc.showOpenDialog(pp);
+
+                                if (retVal == JFileChooser.APPROVE_OPTION) {
+                                    insertNewPage(true, selectedIndex, fc.getSelectedFile().toPath());
+                                    pageList.setSelectedIndex(selectedIndex + 1);
+                                    pageList.ensureIndexIsVisible(selectedIndex + 1);
+                                }
+                            });
+
+                            if (selectedIndex != 0) {
+                                menu.add(moveUp);
+                            }
+
+                            if (selectedIndex < (listLength - 1)) {
+                                menu.add(moveDown);
+                            }
+
+                            menu.add(addPageAbove);
+                            menu.add(addPageBelow);
+                            menu.add(miRemovePage);
+
+                            menu.show(me.getComponent(), me.getX(), me.getY());
+                        }
                     }
                 }
             }
-
         });
+        
         pageList.addListSelectionListener((ListSelectionEvent lse) -> {
             int selectedIndex = pageList.getSelectedIndex();
             if (selectedIndex != -1) {
@@ -343,6 +418,8 @@ public class EditDialog extends javax.swing.JDialog {
         JScrollPane scrollPane = new JScrollPane(pageList);
         c.gridx = 0;
         c.gridy = 0;
+        c.weightx = 1;
+        c.weighty = 1;
         c.fill = GridBagConstraints.BOTH;
 
         pageListPanel.add(scrollPane, c);
@@ -406,34 +483,27 @@ public class EditDialog extends javax.swing.JDialog {
         c.insets = new Insets(0, 0, 0, 0);
         pageDetailsPanel.add(pp, c);
 
-        caption = new JTextField(book.getCurrentPageCaption());
+        String strCaption = book.getCurrentPageCaption();
+        
+        if(strCaption != null){
+            caption = new JTextField(strCaption);
+        }else{
+            caption = new JTextField();
+        }
         caption.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                Sentence s = new Sentence(caption.getText());
+                updateCaption();
+            }
+        });
+        caption.addFocusListener(new FocusListener(){
+            @Override
+            public void focusGained(FocusEvent fe) {
+            }
 
-                if (s.getNumberOfWords() <= 2) {
-                    Object[] options = {"OK", "CANCEL"};
-                    int ret = JOptionPane.showOptionDialog(null,
-                            "Warning: Your sentence has very few words in it (delimited by :). If this is what you intended, then click OK, otherwise click Cancel",
-                            "Warning",
-                            JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
-                            null, options, options[0]);
-
-                    if (ret == JOptionPane.OK_OPTION) {
-                        book.getCurrentPage().setCaption(caption.getText());
-                        pp.setSentence(s);
-                        pp.revalidate();
-                        pp.repaint();
-                    } else {
-                        caption.setText(book.getCurrentPageCaption());
-                    }
-                } else {
-                    book.getCurrentPage().setCaption(caption.getText());
-                    pp.setSentence(s);
-                    pp.revalidate();
-                    pp.repaint();
-                }
+            @Override
+            public void focusLost(FocusEvent fe) {
+                updateCaption();
             }
         });
 
@@ -448,6 +518,10 @@ public class EditDialog extends javax.swing.JDialog {
 
         buttonSave = new JButton("Save");
         buttonSave.setEnabled(false);
+        
+        buttonSave.addActionListener((ActionEvent ae) -> {
+            saveChanges();
+        });
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -507,6 +581,81 @@ public class EditDialog extends javax.swing.JDialog {
      *
      */
     public void saveChanges() {
+        JFileChooser fc = new JFileChooser(currentWorkingDirectory);
+        FileNameExtensionFilter ff = new FileNameExtensionFilter("RightTimeReader Book files (*.ubk)", "ubk");
 
+        fc.setFileFilter(ff);
+        fc.setDialogTitle("Save a book...");
+
+        int retVal = fc.showSaveDialog(pp);
+
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            boolean saveFile = true;
+            File fname = fc.getSelectedFile();
+            
+            if(!fname.toString().endsWith(".ubk")){
+                fname = new File(fname.toString() + ".ubk");
+            }
+
+            if (fc.getSelectedFile().exists()) {
+                int ret = JOptionPane.showConfirmDialog(this,
+                        "This file already exists.\n"
+                        + "Would you like to overwrite it?",
+                        "File already exists",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (ret == JOptionPane.NO_OPTION) {
+                    saveFile = false;
+                }
+            }
+            if (saveFile) {
+                try{
+                    book.reorderPages(getPageOrder());
+                }catch(PageNumberException pne){
+                    Logger.getLogger(Book.class.getName()).log(Level.SEVERE, null, pne);
+                }
+                book.writeUBK(fc.getSelectedFile());
+                this.dispose();
+            }
+        }
+    }
+    
+    public void updateCaption(){
+        Sentence s = new Sentence(caption.getText());
+                
+        if(s.containsSpacesNoColons()){
+            int ret = JOptionPane.showConfirmDialog(null,
+                "Your sentence contains whitespace but no word delimiting colons.\n"
+                + "Would you like to change the whitespace into colons?",
+                "No words found",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (ret == JOptionPane.YES_OPTION) {
+                s.rebuildSentence();
+                caption.setText(s.toString());
+            }
+        }
+
+        if (s.getNumberOfWords() <= 2) {
+            Object[] options = {"OK", "CANCEL"};
+            int ret = JOptionPane.showOptionDialog(null,
+                    "Warning: Your sentence has very few words in it (delimited by :). If this is what you intended, then click OK, otherwise click Cancel",
+                    "Warning",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+                    null, options, options[0]);
+
+            if (ret == JOptionPane.OK_OPTION) {
+                book.getCurrentPage().setCaption(caption.getText());
+                pp.setSentence(s);
+                pp.revalidate();
+                pp.repaint();
+            } else {
+                caption.setText(book.getCurrentPageCaption());
+            }
+        } else {
+            book.getCurrentPage().setCaption(caption.getText());
+            pp.setSentence(s);
+            pp.revalidate();
+            pp.repaint();
+        }
     }
 }
+
